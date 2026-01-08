@@ -1,0 +1,8 @@
+package com.example.myapplication.data.auth.requests
+
+data class RegisterRequest(val username: String,
+                           val password: String,
+                           val firstName: String,
+                           val lastName: String,
+                           val email: String) {
+}
