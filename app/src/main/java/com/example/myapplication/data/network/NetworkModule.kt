@@ -1,8 +1,8 @@
 package com.example.myapplication.data.network
 
 import com.example.myapplication.data.auth.AuthApi
-import com.google.android.datatransport.runtime.dagger.Module
-import com.google.android.datatransport.runtime.dagger.Provides
+import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
