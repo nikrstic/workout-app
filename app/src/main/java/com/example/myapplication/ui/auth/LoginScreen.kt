@@ -17,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,13 +37,16 @@ fun LoginContent(
     error: String?,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
-    onLoginClick: () -> Unit
-){
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(24.dp),
+    onLoginClick: () -> Unit,
+    onNavigateToRegister: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment =Alignment.CenterHorizontally) {
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = "Dobrodošli u aplikaciju",
             style = MaterialTheme.typography.headlineLarge,
@@ -58,8 +62,8 @@ fun LoginContent(
         OutlinedTextField(
             value = username,
             onValueChange = onUsernameChange,
-            label = {Text("Username")},
-            leadingIcon = {Icon(Icons.Default.Person, contentDescription = null)},
+            label = { Text("Username") },
+            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -69,7 +73,7 @@ fun LoginContent(
             value = password,
             onValueChange = onPasswordChange,
             label = { Text("Password") },
-            leadingIcon = {Icon(Icons.Default.Lock, contentDescription = null)},
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
@@ -83,7 +87,7 @@ fun LoginContent(
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp)
-        ){
+        ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     color = Color.White,
@@ -94,7 +98,7 @@ fun LoginContent(
                 Text("Login", fontSize = 18.sp)
             }
         }
-        error?.let{
+        error?.let {
             Text(
                 text = it,
                 color = MaterialTheme.colorScheme.error,
@@ -102,13 +106,22 @@ fun LoginContent(
                 modifier = Modifier.padding(top = 16.dp)
             )
         }
+        TextButton(
+            onClick = onNavigateToRegister,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text("Nemate nalog? Registrujte se!")
+        }
     }
 }
+
+
 
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: ()-> Unit,
+    onNavigateToRegister: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
     ) {
    LoginContent(
@@ -118,7 +131,8 @@ fun LoginScreen(
        error = viewModel.error,
        onUsernameChange = {viewModel.username = it},
        onPasswordChange = { viewModel.password = it },
-       onLoginClick = {viewModel.login(onSuccess = onLoginSuccess)}
+       onLoginClick = {viewModel.login(onSuccess = onLoginSuccess)},
+       onNavigateToRegister = onNavigateToRegister
    )
 
 }
@@ -132,6 +146,7 @@ fun LoginScreenPreview(){
         error = null,
         onUsernameChange = {},
         onPasswordChange = {},
-        onLoginClick = {}
+        onLoginClick = {},
+        onNavigateToRegister = {}
     )
 }

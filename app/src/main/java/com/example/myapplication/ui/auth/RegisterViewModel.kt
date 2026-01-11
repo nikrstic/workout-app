@@ -29,12 +29,17 @@ class RegisterViewModel @Inject constructor(
             isLoading = true
 
             try{
-                val isSuccess = repository.register(username, password, firstName,lastName,email)
-                if(isSuccess){
-                    onSuccess()
+                if(password.length<6){
+                    error = "Sifra mora biti duza od 6 karaktera!"
                 }
-                else{
-                    error = "Ovaj username već postoji. Izaberite novi."
+                else {
+                    val isSuccess =
+                        repository.register(username, password, firstName, lastName, email)
+                    if (isSuccess) {
+                        onSuccess()
+                    } else {
+                        error = "Ovaj username već postoji. Izaberite novi."
+                    }
                 }
             }
             catch(e:Exception){

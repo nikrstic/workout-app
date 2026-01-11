@@ -15,17 +15,23 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = "register",
+        startDestination = "login",
         modifier = modifier
 
     ){
         composable("login"){
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate("sessions"){
-                        popUpTo("login") {inclusive = true}
+                    navController.navigate("sessions") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onNavigateToRegister = {
+                    navController.navigate("register"){
+                        popUpTo("register") {  inclusive=false }
                     }
                 }
+
             )
         }
         composable("sessions"){
@@ -37,7 +43,13 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                     navController.navigate("login"){
                         popUpTo("login") { inclusive = true}
                     }
+                },
+                onNavigateToLogin = {
+                    navController.navigate("login"){
+                        popUpTo("login") {  inclusive=false }
+                    }
                 }
+
             )
         }
     }

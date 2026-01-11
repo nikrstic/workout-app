@@ -32,7 +32,8 @@ fun RegisterContent(
     onFirstNameChange: (String) -> Unit,
     onLastNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -128,12 +129,19 @@ fun RegisterContent(
                 modifier = Modifier.padding(top = 16.dp)
             )
         }
+        TextButton(
+            onClick = onNavigateToLogin,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text("Već imate nalog? Prijavite se")
+        }
     }
 }
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: ()-> Unit,
-    viewModel: RegisterViewModel = hiltViewModel()
+    viewModel: RegisterViewModel = hiltViewModel(),
+    onNavigateToLogin: () -> Unit
 ) {
     RegisterContent (
         username = viewModel.username,
@@ -148,7 +156,8 @@ fun RegisterScreen(
         onFirstNameChange = { viewModel.firstName = it },
         onLastNameChange = {viewModel.lastName = it},
         onEmailChange = {viewModel.email = it},
-        onRegisterClick = {viewModel.register(onSuccess = onRegisterSuccess)}
+        onRegisterClick = {viewModel.register(onSuccess = onRegisterSuccess)},
+        onNavigateToLogin = onNavigateToLogin
     )
 
 }
@@ -170,6 +179,7 @@ fun RegisterScreenPreview() {
         onFirstNameChange = {},
         onLastNameChange = {},
         onEmailChange = {},
-        onRegisterClick = {}
+        onRegisterClick = {},
+        onNavigateToLogin = {}
     )
 }
