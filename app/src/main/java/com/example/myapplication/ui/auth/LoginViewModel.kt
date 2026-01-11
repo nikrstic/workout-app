@@ -20,13 +20,20 @@ class LoginViewModel @Inject constructor(
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
 
-    fun login() {
+    fun login(onSuccess: ()-> Unit) {
         viewModelScope.launch {
             isLoading = true
 
             try{
-                repository.login(username , password)
-
+                val isSuccess = repository.login(username , password)
+                if(isSuccess)
+                {
+                    onSuccess()
+                }
+                else{
+                    error = "Neispravno korisnicko ime ili lozinka"
+                }
+                isLoading = false
             }
             catch (e: Exception){
                 error  = "Login failed"

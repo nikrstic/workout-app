@@ -38,12 +38,19 @@ fun LoginScreen(
         )
         Button(
             onClick = {
-                viewModel.login()
-                onLoginSuccess()
+                viewModel.login(onSuccess = onLoginSuccess)
+                //onLoginSuccess()
             },
+            enabled = !viewModel.isLoading,
             modifier = Modifier.fillMaxWidth()
         ){
-            Text("Login")
+            if(viewModel.isLoading){
+                Text("Ucitavanje")
+            }
+            else{
+                Text("Login")
+            }
+
         }
 
         viewModel.error?.let {
