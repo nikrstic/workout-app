@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.auth.LoginScreen
 import com.example.myapplication.ui.auth.MyWorkoutSessionsScreen
+import com.example.myapplication.ui.auth.RegisterScreen
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
@@ -14,7 +15,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = "login",
+        startDestination = "register",
         modifier = modifier
 
     ){
@@ -30,6 +31,15 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         composable("sessions"){
             MyWorkoutSessionsScreen()
        }
+        composable("register") {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate("login"){
+                        popUpTo("login") { inclusive = true}
+                    }
+                }
+            )
+        }
     }
 
 }

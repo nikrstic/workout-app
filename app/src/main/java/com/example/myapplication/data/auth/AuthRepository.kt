@@ -33,9 +33,24 @@ class AuthRepository @Inject constructor(
             return false
         }
     }
-    suspend fun register(username: String, password: String, firstName: String, lastName: String, email: String)
+    suspend fun register(username: String, password: String, firstName: String, lastName: String, email: String) : Boolean
     {
-        api.register(RegisterRequest(username, password, firstName, lastName, email))
+        try{
+            val response = api.register(RegisterRequest(username, password, firstName, lastName, email))
+            Log.e("API_DEBUG", "response ${response.code()}")
+            if(response.isSuccessful){
+                return true
+            }
+            else{
+                Log.e("API_DEBUG", "Greška: ${response.code()}")
+                return false
+            }
+        }
+        catch(e: Exception){
+            Log.e("API_DEBUG", "Greska: ${e.message}")
+        }
+        return false
+
     }
 
 }
