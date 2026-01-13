@@ -1,6 +1,7 @@
-package com.example.myapplication.data.auth
+package com.example.myapplication.data.auth.repositories
 
 import android.util.Log
+import com.example.myapplication.data.auth.AuthApi
 import com.example.myapplication.data.auth.local.TokenStorage
 import com.example.myapplication.data.auth.requests.LoginRequest
 import com.example.myapplication.data.auth.requests.RegisterRequest
@@ -36,7 +37,15 @@ class AuthRepository @Inject constructor(
     suspend fun register(username: String, password: String, firstName: String, lastName: String, email: String) : Boolean
     {
         try{
-            val response = api.register(RegisterRequest(username, password, firstName, lastName, email))
+            val response = api.register(
+                RegisterRequest(
+                    username,
+                    password,
+                    firstName,
+                    lastName,
+                    email
+                )
+            )
             Log.e("API_DEBUG", "response ${response.code()}")
             if(response.isSuccessful){
                 return true

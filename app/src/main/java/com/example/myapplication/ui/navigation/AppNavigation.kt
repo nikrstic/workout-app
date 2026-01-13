@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.ui.auth.ExerciseScreen
 import com.example.myapplication.ui.auth.LoginScreen
 import com.example.myapplication.ui.auth.MyWorkoutSessionsScreen
 import com.example.myapplication.ui.auth.RegisterScreen
@@ -15,7 +16,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
     NavHost(
         navController = navController,
-        startDestination = "login",
+        startDestination = "exercises",
         modifier = modifier
 
     ){
@@ -51,6 +52,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 }
 
             )
+        }
+        composable ("exercises"){
+            ExerciseScreen()
         }
     }
 
