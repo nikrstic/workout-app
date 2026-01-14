@@ -147,15 +147,24 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
 @Composable
 fun ExerciseScreen(
     viewModel: ExerciseViewModel = hiltViewModel()
-){
-    ExerciseContent(
-      exercises = viewModel.exercises,
-        isLoading = viewModel.isLoading,
-        onExerciseClick = {
-            exercise ->
-            println("Kliknuto na ${exercise.name}")
-        }
-    )
+) {
+    if(viewModel.selectedExercise == null){
+        ExerciseContent(
+            exercises = viewModel.exercises,
+            isLoading = viewModel.isLoading,
+            onExerciseClick = { exercise ->
+                viewModel.selectExercise(exercise)
+            }
+        )
+    } else {
+        ExerciseDetailScreen(
+            exercise = viewModel.selectedExercise!!,
+            onBackClick = {
+
+                viewModel.selectExercise(null)
+            }
+        )
+    }
 }
 @Preview(showBackground = true)
 @Preview(showBackground = true)

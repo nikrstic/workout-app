@@ -2,6 +2,7 @@ package com.example.myapplication.ui.auth
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +19,12 @@ class ExerciseViewModel @Inject constructor(
 
     var exercises by mutableStateOf<List<Exercise>>(emptyList())
     var isLoading by mutableStateOf(false)
+    var selectedExercise by mutableStateOf<Exercise?>(null)
+        private set
 
+    fun selectExercise(exercise: Exercise?) {
+        selectedExercise = exercise
+    }
     init{
         loadExercises()
     }

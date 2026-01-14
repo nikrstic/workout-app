@@ -57,6 +57,7 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
+    implementation(libs.androidx.ui)
     ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation("androidx.datastore:datastore-preferences-android:1.2.0")
