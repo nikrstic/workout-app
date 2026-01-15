@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,14 +36,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.example.myapplication.data.model.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseContent(
-    exercises: List<Exercise>,
-    isLoading: Boolean,
+    viewModel: ExerciseViewModel,
     onExerciseClick: (Exercise) -> Unit
     ) {
     Scaffold(
@@ -57,17 +59,44 @@ fun ExerciseContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ){
-            if(isLoading){
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            else{
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(exercises){
-                        exercise->
-                        ExerciseItem(exercise = exercise, onClick = {onExerciseClick(exercise)})
+            val lazyExerciseItems = viewModel.exercisePagingFlow.collectAsLazyPagingItems()
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(count = lazyExerciseItems.itemCount) { index ->
+                    val exercise = lazyExerciseItems[index]
+                    if (exercise != null) {
+                        ExerciseItem(exercise = exercise, onClick = { onExerciseClick(exercise) })
+                    }
+                }
+                lazyExerciseItems.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item {
+                                Box(
+                                    Modifier.fillParentMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                        .wrapContentWidth(Alignment.CenterHorizontally)
+                                )
+                            }
+                        }
+
+                        loadState.refresh is LoadState.Error -> {
+                            val e = lazyExerciseItems.loadState.refresh as LoadState.Error
+                            item { Text("Greska: ${e.error.localizedMessage}") }
+                        }
                     }
                 }
             }
@@ -150,11 +179,10 @@ fun ExerciseScreen(
 ) {
     if(viewModel.selectedExercise == null){
         ExerciseContent(
-            exercises = viewModel.exercises,
-            isLoading = viewModel.isLoading,
             onExerciseClick = { exercise ->
                 viewModel.selectExercise(exercise)
-            }
+            },
+            viewModel = viewModel
         )
     } else {
         ExerciseDetailScreen(
@@ -166,7 +194,6 @@ fun ExerciseScreen(
         )
     }
 }
-@Preview(showBackground = true)
 @Preview(showBackground = true)
 @Composable
 fun ExercisePreview() {
@@ -192,5 +219,5 @@ fun ExercisePreview() {
             instructions = listOf("Uhvatite se za šipku", "Povucite se bradom iznad")
         )
     )
-    ExerciseContent(exercises = fakeExercises, isLoading = false, onExerciseClick = {})
+    ExerciseContent(onExerciseClick = {}, viewModel = viewModel())
 }

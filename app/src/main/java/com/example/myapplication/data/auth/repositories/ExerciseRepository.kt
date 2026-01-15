@@ -14,10 +14,14 @@ class ExerciseRepository @Inject constructor(
             val response = api.allExercises()
 
             if(response.isSuccessful){
-                Log.d("API_DEBUG", response.body().toString())
+                Log.d("API_DEBUG", response.message())
+                 response.body()?.metadata?.nextPage?.let { Log.d("API_DEBUG", it) }
+
                 response.body()?.data
             }
             else{
+                Log.d("API_DEBUG", response.errorBody().toString())
+                Log.d("API_DEBUG", "response nije successful")
                 null
             }
         }

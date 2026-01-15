@@ -15,5 +15,7 @@ data class ExerciseResponse(
 data class ExerciseMetadata(
     val totalExercise: Int,
     val totalPages: Int,
-    val currentPage: Int
+    val currentPage: Int,
+    val previousPage: String?,
+    val nextPage: String?
 )
