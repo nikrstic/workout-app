@@ -17,16 +17,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -49,6 +56,8 @@ import com.example.myapplication.data.model.Exercise
 @Composable
 fun ExerciseContent(
     viewModel: ExerciseViewModel,
+    searchQuery: String,
+    onQueryChange: (String)-> Unit,
     onExerciseClick: (Exercise) -> Unit
     ) {
     Scaffold(
@@ -57,12 +66,33 @@ fun ExerciseContent(
         }
     ) {
         paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ){
             val lazyExerciseItems = viewModel.exercisePagingFlow.collectAsLazyPagingItems()
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange =  onQueryChange ,
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                placeholder = { Text("Pretraži vežbe") },
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()){
+                        IconButton(
+                            onClick = { onQueryChange("")}
+                        ){
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription= "Obrisi"
+                            )
+                        }
+                    }
+                }
+            )
+
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -184,12 +214,18 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
 fun ExerciseScreen(
     viewModel: ExerciseViewModel = hiltViewModel()
 ) {
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+
     if(viewModel.selectedExercise == null){
         ExerciseContent(
+            viewModel = viewModel,
+            searchQuery = searchQuery,
+            onQueryChange = { newQuery ->
+                viewModel.searchQuery.value = newQuery
+            },
             onExerciseClick = { exercise ->
                 viewModel.selectExercise(exercise)
-            },
-            viewModel = viewModel
+            }
         )
     } else {
         ExerciseDetailScreen(
@@ -201,6 +237,7 @@ fun ExerciseScreen(
         )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun ExercisePreview() {
@@ -226,5 +263,5 @@ fun ExercisePreview() {
             instructions = listOf("Uhvatite se za šipku", "Povucite se bradom iznad")
         )
     )
-    ExerciseContent(onExerciseClick = {}, viewModel = viewModel())
+    ExerciseContent(onExerciseClick = {}, viewModel = viewModel(), searchQuery = "Sklekovi", onQueryChange = {})
 }

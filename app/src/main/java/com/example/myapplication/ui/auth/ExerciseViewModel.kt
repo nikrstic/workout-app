@@ -12,19 +12,42 @@ import com.example.myapplication.data.auth.repositories.ExercisePagingSource
 import com.example.myapplication.data.auth.repositories.ExerciseRepository
 import com.example.myapplication.data.model.Exercise
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseViewModel @Inject constructor(
-    repository: ExerciseRepository
+    private val repository: ExerciseRepository
 ): ViewModel() {
-    private val allExercises: List<Exercise>? by lazy{
-        repository.getAllExercises()
+
+    val searchQuery = MutableStateFlow("")
+    val selectedBodyPart = MutableStateFlow<String?>(null)
+    val selectedEquipment = MutableStateFlow<String?>(null)
+
+    private val filterState = combine(
+        searchQuery,
+        selectedBodyPart,
+        selectedEquipment
+    ){
+        query, bodyPart, equipment ->
+        Triple(query,bodyPart,equipment)
     }
-    val exercisePagingFlow = Pager(
-        config = PagingConfig(pageSize = 20, enablePlaceholders = false),
-        pagingSourceFactory = { ExercisePagingSource(allExercises)}
-    ).flow.cachedIn(viewModelScope)
+
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    val exercisePagingFlow = filterState.debounce(300).flatMapLatest { (query, bodyPart, equipment)->
+        Pager(
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            pagingSourceFactory = {
+                ExercisePagingSource(repository, query, bodyPart, equipment)
+            }
+        ).flow
+    }.cachedIn(viewModelScope)
+
 
     var selectedExercise by mutableStateOf<Exercise?>(null)
         private set
