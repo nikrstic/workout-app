@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +41,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.request.ImageRequest
 import com.example.myapplication.data.model.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,8 +125,12 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
                 .height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val gifPath = "file:///android_asset/gifs/${exercise.gif}"
             AsyncImage(
-                model = exercise.gif,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(gifPath)
+                    .decoderFactory(GifDecoder.Factory())
+                    .build(),
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp)

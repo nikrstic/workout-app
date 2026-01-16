@@ -32,10 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.request.ImageRequest
 import com.example.myapplication.data.model.Exercise
 
 
@@ -73,8 +76,12 @@ fun ExerciseDetailScreen (
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(8.dp)
             ) {
+                val gifPath = "file:///android_asset/gifs/${exercise.gif}"
                 AsyncImage(
-                    model = exercise.gif,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(gifPath)
+                        .decoderFactory(GifDecoder.Factory())
+                        .build(),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.FillBounds

@@ -4,43 +4,28 @@ import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.myapplication.data.model.Exercise
-import com.example.myapplication.data.network.ExerciseApi
 
 class ExercisePagingSource (
-    private val api: ExerciseApi
-): PagingSource<String, Exercise>(){
+    private val allExercises: List<Exercise>?
+): PagingSource<Int, Exercise>(){
 
-    override suspend fun load(params: LoadParams<String>): LoadResult<String, Exercise>{
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Exercise>{
+        val position = params.key ?: 0
         return try {
-            if (params.key != null) {
-                kotlinx.coroutines.delay(1000)
-            }
-            val nextUrl = params.key?.replace("http://", "https://")
-            val response = if (params.key == null){
-                api.allExercises()
-            }
-            else{
-                Log.d("API_DEBUG", "Pozivam URL: $nextUrl")
-                api.allExerciseByUrl(nextUrl!!)
+            val pageSize =params.loadSize
+            val start = position * pageSize
+            val end = minOf(start+pageSize, allExercises!!.size)
 
+            val data = if(start< allExercises.size ){
+                allExercises.subList(start, end)
+            }else{
+                emptyList()
             }
-            if (response.isSuccessful) {
-                val body = response.body()
-                val data = body?.data ?: emptyList()
-                Log.d("API_DEBUG", "Status: ${response.code()}")
-                Log.d("API_DEBUG", "Body data size: ${data.size}")
-
-                LoadResult.Page(
-                    data = data,
-                    prevKey = body?.metadata?.previousPage,
-                    nextKey = body?.metadata?.nextPage
-                )
-            } else {
-                val errorMsg = response.errorBody()?.string()
-                Log.e("API_DEBUG", "Greska! Kod: ${response.code()}, Error Body: $errorMsg")
-                LoadResult.Error(Exception("API Error: ${response.code()}"))
-            }
-
+            LoadResult.Page(
+                data = data,
+                prevKey = if(position == 0) null else position -1,
+                nextKey = if(end >= allExercises.size) null else position + 1
+            )
         }catch (e: Exception){
             Log.d("API_DEBUG", "GRESKA $e")
             LoadResult.Error(e)
@@ -48,7 +33,11 @@ class ExercisePagingSource (
         }
     }
 
-    override fun getRefreshKey(state: PagingState<String, Exercise>): String? {
-        return null
+    override fun getRefreshKey(state: PagingState<Int, Exercise>): Int? {
+        return state.anchorPosition?.let { anchorPosition->
+            state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
+                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+
+        }
     }
 }

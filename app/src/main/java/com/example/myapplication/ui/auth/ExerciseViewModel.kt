@@ -11,46 +11,25 @@ import androidx.paging.cachedIn
 import com.example.myapplication.data.auth.repositories.ExercisePagingSource
 import com.example.myapplication.data.auth.repositories.ExerciseRepository
 import com.example.myapplication.data.model.Exercise
-import com.example.myapplication.data.network.ExerciseApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseViewModel @Inject constructor(
-    private val api: ExerciseApi
+    repository: ExerciseRepository
 ): ViewModel() {
-
+    private val allExercises: List<Exercise>? by lazy{
+        repository.getAllExercises()
+    }
     val exercisePagingFlow = Pager(
-        config = PagingConfig(pageSize = 20, prefetchDistance = 1),
-        pagingSourceFactory = { ExercisePagingSource(api)}
+        config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+        pagingSourceFactory = { ExercisePagingSource(allExercises)}
     ).flow.cachedIn(viewModelScope)
 
-
-    //var exercises by mutableStateOf<List<Exercise>>(emptyList())
-    //var isLoading by mutableStateOf(false)
     var selectedExercise by mutableStateOf<Exercise?>(null)
         private set
 
     fun selectExercise(exercise: Exercise?) {
         selectedExercise = exercise
     }
-//    init{
-//        loadExercises()
-//    }
-
-//    fun loadExercises(){
-//        viewModelScope.launch {
-//            isLoading = true
-//            val result = repository.getAllExercises()
-//            Log.d("API_DEBUG", result?.joinToString { exercise -> exercise.name } ?: "nema vezbe")
-//
-//            if(result != null){
-//                exercises =result
-//            }
-//            else{
-//                Log.d("API_DEBUG", "rezultat je null")
-//            }
-//            isLoading = false
-//        }
-//    }
 }

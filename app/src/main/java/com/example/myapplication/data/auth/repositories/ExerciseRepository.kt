@@ -1,34 +1,37 @@
 package com.example.myapplication.data.auth.repositories
 
+import android.content.Context
 import android.util.Log
 import com.example.myapplication.data.model.Exercise
-import com.example.myapplication.data.network.ExerciseApi
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class ExerciseRepository @Inject constructor(
-    private val api: ExerciseApi
+    @param:ApplicationContext private val context: Context
 ){
-    suspend fun getAllExercises(): List<Exercise>?
+    fun getAllExercises(): List<Exercise>?
     {
         return try{
-            val response = api.allExercises()
-
-            if(response.isSuccessful){
-                Log.d("API_DEBUG", response.message())
-                 response.body()?.metadata?.nextPage?.let { Log.d("API_DEBUG", it) }
-
-                response.body()?.data
-            }
-            else{
-                Log.d("API_DEBUG", response.errorBody().toString())
-                Log.d("API_DEBUG", "response nije successful")
-                null
-            }
+            loadFromAssets(context, "exercises.json")
         }
         catch (e: Exception){
             Log.d("API_DEBUG", "Greska $e")
             null
         }
     }
+    inline fun <reified T> loadFromAssets(
+        context: Context,
+        fileName: String
+    ): T {
+        val jsonString = context.assets
+            .open(fileName)
+            .bufferedReader()
+            .use { it.readText() }
+
+        return Gson().fromJson(jsonString, object : TypeToken<T>() {}.type)
+    }
+
 
 }
