@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -23,6 +24,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +55,48 @@ import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import com.example.myapplication.data.model.Exercise
 
+@Composable
+fun FilterSection(
+    title: String,
+    items: List<String>,
+    selectedItem: String?,
+    onItemClick: (String?) -> Unit
+){
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding =PaddingValues(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ){
+            items(items.size){item->
+                FilterChip(
+                    selected = items[item] == selectedItem,
+                    onClick = { onItemClick(items[item])},
+                    label = {
+                        Text(
+                            text = items[item].replaceFirstChar{ it.uppercase()},
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+
+            }
+        }
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseContent(
@@ -60,6 +105,9 @@ fun ExerciseContent(
     onQueryChange: (String)-> Unit,
     onExerciseClick: (Exercise) -> Unit
     ) {
+    val selectedPart by viewModel.selectedBodyPart.collectAsStateWithLifecycle()
+    val selectedEq by viewModel.selectedEquipment.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             TopAppBar(title= {Text("Dostupne vezbe")})
@@ -72,6 +120,10 @@ fun ExerciseContent(
                 .padding(paddingValues)
         ){
             val lazyExerciseItems = viewModel.exercisePagingFlow.collectAsLazyPagingItems()
+
+            val bodyPartNames by viewModel.bodyPartNames.collectAsStateWithLifecycle()
+            val equipmentNames by viewModel.equipmentNames.collectAsStateWithLifecycle()
+
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange =  onQueryChange ,
@@ -92,11 +144,24 @@ fun ExerciseContent(
                     }
                 }
             )
+            FilterSection(
+                title = "Deo tela",
+                items = bodyPartNames,
+                selectedItem = selectedPart,
+                onItemClick = { viewModel.selectBodyPart(it)}
+            )
+            FilterSection(
+                title = "Oprema",
+                items = equipmentNames ,
+                selectedItem = selectedEq,
+                onItemClick = { viewModel.selectEquipment(it)}
+
+            )
 
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().weight(1f)
             ) {
                 items(count = lazyExerciseItems.itemCount) { index ->
                     val exercise = lazyExerciseItems[index]
