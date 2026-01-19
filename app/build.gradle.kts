@@ -57,12 +57,18 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.paging.common)
+    implementation("androidx.paging:paging-compose:3.3.6")
     ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation("androidx.datastore:datastore-preferences-android:1.2.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-gif:2.5.0")
 
     implementation("androidx.compose.material:material-icons-core:1.7.8")
 

@@ -28,4 +28,9 @@ object NetworkModule {
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi =
         retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideExerciseApi(retrofit: Retrofit): ExerciseApi =
+        retrofit.create(ExerciseApi::class.java)
 }
