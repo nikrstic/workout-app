@@ -64,6 +64,19 @@ class ExerciseRepository @Inject constructor(
         }
     }
 
+    suspend fun getFilteredExercises(query: String, bodyPart: String?, equipment: String? ): List<Exercise>{
+        return withContext(Dispatchers.Default){
+            getAllExercises().filter{
+                exercise->
+                val matchQuery = query.isEmpty() || exercise.name.contains(query, ignoreCase = true)
+                val matchBodyPart = bodyPart == null || exercise.bodyParts.contains(bodyPart)
+                val matchEquipment = equipment == null || exercise.equipments.contains(equipment)
+                matchQuery && matchBodyPart && matchEquipment
+            }
+        }
+    }
+
+
     suspend inline fun <reified T> loadFromAssets(
         context: Context,
         fileName: String

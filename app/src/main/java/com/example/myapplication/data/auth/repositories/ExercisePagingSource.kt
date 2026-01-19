@@ -18,15 +18,8 @@ class ExercisePagingSource (
         val position = params.key ?: 0
         return withContext(Dispatchers.Default) {
             try {
-                val allExercises = repository.getAllExercises()
 
-                val filteredExercise = allExercises.filter { exercise ->
-                    val matchesQuery = exercise.name.contains(query, ignoreCase = true)
-                    val matchesBodyPart = bodyPart == null || exercise.bodyParts.contains(bodyPart)
-                    val matchesEquipment = equipment == null || exercise.equipments.contains(equipment)
-
-                    matchesQuery && matchesBodyPart && matchesEquipment
-                }
+                val filteredExercise = repository.getFilteredExercises(query,bodyPart,equipment)
 
                 val end = minOf(position + params.loadSize, filteredExercise.size)
 
