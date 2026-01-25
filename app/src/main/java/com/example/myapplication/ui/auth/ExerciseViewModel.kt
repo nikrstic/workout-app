@@ -2,6 +2,7 @@ package com.example.myapplication.ui.auth
 
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -11,10 +12,13 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.example.myapplication.data.auth.repositories.ExercisePagingSource
 import com.example.myapplication.data.auth.repositories.ExerciseRepository
+import com.example.myapplication.data.auth.requests.PlanExerciseRequest
+import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
 import com.example.myapplication.data.model.Equipment
 import com.example.myapplication.data.model.Exercise
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +42,10 @@ class ExerciseViewModel @Inject constructor(
     var selectedEquipment = MutableStateFlow<String?>(null)
     val bodyPartList = MutableStateFlow<List<BodyPart>>(emptyList())
     val equipmentList = MutableStateFlow<List<Equipment>>(emptyList())
-
+    var isSelectionMode by mutableStateOf(false)
+    var selectedExerciseForPlan by mutableStateOf<Exercise?>(null)
+    var selectedPlanId by mutableStateOf<Long?>(null)
+        private set
     val bodyPartNames: StateFlow<List<String>> = bodyPartList.map { list ->
         list.map { it.name }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -92,5 +99,38 @@ class ExerciseViewModel @Inject constructor(
     fun selectEquipment(equipment: String?){
         selectedEquipment.value = if(selectedEquipment.value == equipment) null else equipment
     }
+    private  val _addedExercises = mutableStateListOf<PlanExerciseRequest>()
+    fun addExerciseToPlan(exercise: Exercise, sets: Int, reps: Int){
+        val planId = selectedPlanId ?: return
+
+        val newExerciseEntry = PlanExerciseRequest(
+            planId = planId,
+            exerciseId = exercise.exerciseId,
+            orderIndex = _addedExercises.size,
+            defaultSets = sets,
+            defaultReps = reps,
+            restSeconds = 60
+        )
+        _addedExercises.add(newExerciseEntry)
+        selectedExerciseForPlan = null
+    }
+
+    fun setPlanId(id: Long){
+        selectedPlanId = id
+        isSelectionMode = true
+    }
+    val plans = mutableStateListOf<WorkoutPlanResponse>()
+    fun loadPlans(){
+        viewModelScope.launch(Dispatchers.IO) {
+            try{
+            val response = repository.getPlans()
+            if(response.isSuccessful){
+                plans.clear()
+                response.body()?.let {plans.addAll(it)}
+            }
+        }catch (e: Exception) {Log.e("Api", "Error: $e")}
+        }
+    }
+
 
 }

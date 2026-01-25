@@ -2,6 +2,8 @@ package com.example.myapplication.data.auth.repositories
 
 import android.content.Context
 import android.util.Log
+import com.example.myapplication.data.auth.AuthApi
+import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
 import com.example.myapplication.data.model.Equipment
 import com.example.myapplication.data.model.Exercise
@@ -10,12 +12,14 @@ import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ExerciseRepository @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val api: AuthApi
 ) {
     private var bodyPartsCache: List<BodyPart>? = null
     private var equipmentsCache: List<Equipment>? = null
@@ -88,6 +92,13 @@ class ExerciseRepository @Inject constructor(
 
         Gson().fromJson(jsonString, object : TypeToken<T>() {}.type)
     }
+    // workoutPlans
 
+    suspend fun getExerciseById(id: String): Exercise? {
+        return getAllExercises().find { it.exerciseId == id }
+    }
+    suspend fun  getPlans(): Response<List<WorkoutPlanResponse>>{
+        return api.getPlans()
+    }
 
 }
