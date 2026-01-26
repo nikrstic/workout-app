@@ -3,6 +3,7 @@ package com.example.myapplication.data.auth.repositories
 import android.content.Context
 import android.util.Log
 import com.example.myapplication.data.auth.AuthApi
+import com.example.myapplication.data.auth.requests.WorkoutPlanRequest
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
 import com.example.myapplication.data.model.Equipment
@@ -99,6 +100,10 @@ class ExerciseRepository @Inject constructor(
     }
     suspend fun  getPlans(): Response<List<WorkoutPlanResponse>>{
         return api.getPlans()
+    }
+    suspend fun createPlan(name: String, description: String): Response<WorkoutPlanResponse>{
+        val response = api.createPlan(WorkoutPlanRequest(name,description))
+        return response
     }
 
 }

@@ -133,6 +133,11 @@ class ExerciseViewModel @Inject constructor(
         }catch (e: Exception) {Log.e("API_DEBUG", "Error: $e")}
         }
     }
-
+    fun createPlan(name: String, desc: String) {
+        viewModelScope.launch {
+            repository.createPlan(name, desc)
+            loadPlans()
+        }
+    }
 
 }

@@ -3,6 +3,7 @@ package com.example.myapplication.data.auth
 
 import com.example.myapplication.data.auth.requests.LoginRequest
 import com.example.myapplication.data.auth.requests.RegisterRequest
+import com.example.myapplication.data.auth.requests.WorkoutPlanRequest
 import com.example.myapplication.data.auth.responses.AuthResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import retrofit2.Response
@@ -27,5 +28,9 @@ interface AuthApi {
     suspend fun  getPlans(
     ): Response<List<WorkoutPlanResponse>>
 
+    @POST("api/plans/create")
+    suspend fun createPlan(
+        @Body request: WorkoutPlanRequest
+    ): Response<WorkoutPlanResponse>
 
 }

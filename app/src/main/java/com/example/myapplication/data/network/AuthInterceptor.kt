@@ -19,6 +19,14 @@ class AuthInterceptor @Inject constructor(
             }
         }.build()
 
-    return chain.proceed(request)
+        val response = chain.proceed(request)
+        if (response.code == 401 || response.code == 403) {
+            response.close()
+            runBlocking {
+                tokenStorage.clearToken()
+            }
+        }
+
+    return response
 }
 }
