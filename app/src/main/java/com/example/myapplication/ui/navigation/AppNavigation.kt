@@ -1,12 +1,16 @@
 package com.example.myapplication.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.myapplication.ui.auth.AuthViewModel
 import com.example.myapplication.ui.auth.ExerciseScreen
 import com.example.myapplication.ui.auth.LoginScreen
 import com.example.myapplication.ui.auth.MyWorkoutSessionsScreen
@@ -16,10 +20,12 @@ import com.example.myapplication.ui.auth.WorkoutPlanScreen
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val token by authViewModel.token.collectAsState(initial = null)
 
     NavHost(
         navController = navController,
-        startDestination = "workout_plans",
+        startDestination = if (token != null) "workout_plans" else "login",
         modifier = modifier
 
     ){

@@ -65,7 +65,7 @@ class ExerciseViewModel @Inject constructor(
         loadFilterData()
     }
     private fun loadFilterData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 bodyPartList.value = repository.getAllBodyParts()
                 equipmentList.value = repository.getAllEquipments()
@@ -124,11 +124,13 @@ class ExerciseViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try{
             val response = repository.getPlans()
+                Log.e("API_DEBUG", "response body: "+response.body().toString()+ "  " + response.code())
             if(response.isSuccessful){
                 plans.clear()
                 response.body()?.let {plans.addAll(it)}
             }
-        }catch (e: Exception) {Log.e("Api", "Error: $e")}
+
+        }catch (e: Exception) {Log.e("API_DEBUG", "Error: $e")}
         }
     }
 

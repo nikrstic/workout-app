@@ -29,24 +29,23 @@ fun WorkoutPlanScreen(
     LaunchedEffect(Unit) {
         viewModel.loadPlans()
     }
-
-    Scaffold(topBar = {
-        TopAppBar(title={
-            Text("Moji planovi") }) }){padding->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            items(plans) { plan ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable { onPlanSelected(plan.id) }
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = plan.name, style = MaterialTheme.typography.displaySmall)
-                        Text(text = plan.description)
+        Scaffold(topBar = {
+            TopAppBar(title={
+                Text("Moji planovi") }) }) { padding ->
+            LazyColumn(modifier = Modifier.padding(padding)) {
+                items(plans) { plan ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable { onPlanSelected(plan.id) }
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = plan.name, style = MaterialTheme.typography.displaySmall)
+                            Text(text = plan.description)
+                        }
                     }
                 }
             }
-        }
     }
 }
