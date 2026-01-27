@@ -21,6 +21,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 @Composable
 fun WorkoutPlanScreen(
     onPlanSelected: (Long) -> Unit,
+    onAddExercisesToPlan: (Long) -> Unit,
     viewModel: ExerciseViewModel = hiltViewModel()
 ) {
     val plans = viewModel.plans
@@ -64,7 +65,6 @@ fun WorkoutPlanScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                             .clickable {
-                                viewModel.setPlanId(plan.id)
                                 onPlanSelected(plan.id)
                             },
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -85,6 +85,15 @@ fun WorkoutPlanScreen(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
+                            }
+                            IconButton(onClick = {
+                                viewModel.setPlanId(plan.id)
+                                onAddExercisesToPlan(plan.id)
+                            }){
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = "Dodaj",
+                                    tint = MaterialTheme.colorScheme.primary)
                             }
                             IconButton(onClick = { planToDelete = plan.id }) {
                                 Icon(

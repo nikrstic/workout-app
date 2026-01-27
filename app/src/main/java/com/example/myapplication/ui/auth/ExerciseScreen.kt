@@ -60,6 +60,7 @@ import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import com.example.myapplication.data.model.Exercise
 import androidx.compose.material3.AlertDialog
+import androidx.compose.runtime.LaunchedEffect
 
 
 @Composable
@@ -288,6 +289,11 @@ fun ExerciseScreen(
     viewModel: ExerciseViewModel = hiltViewModel(),
     onBack: () -> Unit
 ) {
+    LaunchedEffect(planId) {
+        if (planId != null && planId != -1L) {
+            viewModel.setPlanId(planId)
+        }
+    }
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     var showAddDetailsDialog by remember { mutableStateOf(false) }
     if(viewModel.selectedExercise == null){
@@ -299,8 +305,8 @@ fun ExerciseScreen(
             },
             onExerciseClick = { exercise ->
                 if(viewModel.isSelectionMode){
-                    showAddDetailsDialog = true
                     viewModel.selectedExerciseForPlan = exercise
+                    showAddDetailsDialog = true
                 }else {
                     viewModel.selectExercise(exercise)
                 }
@@ -322,7 +328,6 @@ fun ExerciseScreen(
         ExerciseDetailScreen(
             exercise = viewModel.selectedExercise!!,
             onBackClick = {
-
                 viewModel.selectExercise(null)
             }
         )

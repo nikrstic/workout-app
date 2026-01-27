@@ -100,19 +100,29 @@ class ExerciseViewModel @Inject constructor(
         selectedEquipment.value = if(selectedEquipment.value == equipment) null else equipment
     }
     private  val _addedExercises = mutableStateListOf<PlanExerciseRequest>()
-    fun addExerciseToPlan(exercise: Exercise, sets: Int, reps: Int){
+    fun addExerciseToPlan(exercise: Exercise, sets: Int, reps: Int) {
         val planId = selectedPlanId ?: return
 
-        val newExerciseEntry = PlanExerciseRequest(
-            planId = planId,
-            exerciseId = exercise.exerciseId,
-            orderIndex = _addedExercises.size,
-            defaultSets = sets,
-            defaultReps = reps,
-            restSeconds = 60
-        )
-        _addedExercises.add(newExerciseEntry)
-        selectedExerciseForPlan = null
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = PlanExerciseRequest(
+                planId = planId,
+                exerciseId = exercise.exerciseId,
+                orderIndex = 0,
+                defaultSets = sets,
+                defaultReps = reps,
+                restSeconds = 60
+            )
+
+            try {
+                //val response = repository.addExerciseToPlan(request)
+//                if (response.isSuccessful) {
+//                    Log.d("API", "Vezba uspesno dodata u plan!")
+//                    selectedExerciseForPlan = null
+//                }
+            } catch (e: Exception) {
+                Log.e("API", "Greška pri dodavanju vežbe: $e")
+            }
+        }
     }
 
     fun setPlanId(id: Long){
