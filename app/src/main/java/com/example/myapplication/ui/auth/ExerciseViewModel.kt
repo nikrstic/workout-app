@@ -139,5 +139,11 @@ class ExerciseViewModel @Inject constructor(
             loadPlans()
         }
     }
+    fun deletePlan(id: Long){
+        viewModelScope.launch {
+            repository.deletePlan(id)
+            loadPlans()
+        }
+    }
 
 }

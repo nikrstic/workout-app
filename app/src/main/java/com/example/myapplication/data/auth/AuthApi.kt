@@ -8,8 +8,10 @@ import com.example.myapplication.data.auth.responses.AuthResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface AuthApi {
 
@@ -33,4 +35,8 @@ interface AuthApi {
         @Body request: WorkoutPlanRequest
     ): Response<WorkoutPlanResponse>
 
+    @DELETE("api/plans/{planId}")
+    suspend fun deletePlan(
+        @Path("planId") planId: Long
+    ): Response<Unit>
 }

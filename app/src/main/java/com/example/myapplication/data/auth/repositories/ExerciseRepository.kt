@@ -105,5 +105,8 @@ class ExerciseRepository @Inject constructor(
         val response = api.createPlan(WorkoutPlanRequest(name,description))
         return response
     }
+    suspend fun  deletePlan(id: Long): Response<Unit>{
+        return api.deletePlan(id)
+    }
 
 }
