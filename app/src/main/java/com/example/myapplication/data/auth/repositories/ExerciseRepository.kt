@@ -3,7 +3,12 @@ package com.example.myapplication.data.auth.repositories
 import android.content.Context
 import android.util.Log
 import com.example.myapplication.data.auth.AuthApi
+import com.example.myapplication.data.auth.requests.AddExerciseToPlanRequest
+import com.example.myapplication.data.auth.requests.CreateExerciseRequest
 import com.example.myapplication.data.auth.requests.WorkoutPlanRequest
+import com.example.myapplication.data.auth.responses.CreateExerciseResponse
+import com.example.myapplication.data.auth.responses.ExerciseResponseById
+import com.example.myapplication.data.auth.responses.PlanExercisesResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
 import com.example.myapplication.data.model.Equipment
@@ -108,5 +113,22 @@ class ExerciseRepository @Inject constructor(
     suspend fun  deletePlan(id: Long): Response<Unit>{
         return api.deletePlan(id)
     }
+    suspend fun getExerciseFromPlan(id: Long):Response<ExerciseResponseById>{
+        return api.getExerciseById(id)
+    }
+    suspend fun createExercise(request: CreateExerciseRequest):Response<CreateExerciseResponse>?{
+        try{
+            return api.createExercise(request)
+        } catch (e: Exception){
+            Log.e("API_DEBUG", "greska prilikom kreiranja vezbe ${e}")
+            return null
+        }
+    }
+    suspend fun addExerciseToPlan(request: AddExerciseToPlanRequest, planId:Long): Response<Unit>{
+        return api.addExerciseToPlan(planId,request)
+    }
 
+    suspend fun getPlanExercises(planId: Long): Response<List<PlanExercisesResponse>> {
+        return api.getPlanExercises(planId)
+    }
 }

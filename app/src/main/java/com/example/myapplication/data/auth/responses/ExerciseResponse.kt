@@ -19,3 +19,10 @@ data class ExerciseMetadata(
     val previousPage: String?,
     val nextPage: String?
 )
+data class ExerciseResponseById(
+    val id: Long,
+    val name: String,
+    val muscleGroup: String,
+    val equipment: String,
+    val description: String
+)

@@ -12,7 +12,10 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.example.myapplication.data.auth.repositories.ExercisePagingSource
 import com.example.myapplication.data.auth.repositories.ExerciseRepository
+import com.example.myapplication.data.auth.requests.AddExerciseToPlanRequest
+import com.example.myapplication.data.auth.requests.CreateExerciseRequest
 import com.example.myapplication.data.auth.requests.PlanExerciseRequest
+import com.example.myapplication.data.auth.responses.PlanExercisesResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
 import com.example.myapplication.data.model.Equipment
@@ -104,23 +107,54 @@ class ExerciseViewModel @Inject constructor(
         val planId = selectedPlanId ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
-            val request = PlanExerciseRequest(
-                planId = planId,
-                exerciseId = exercise.exerciseId,
-                orderIndex = 0,
-                defaultSets = sets,
-                defaultReps = reps,
-                restSeconds = 60
-            )
-
             try {
-                //val response = repository.addExerciseToPlan(request)
-//                if (response.isSuccessful) {
-//                    Log.d("API", "Vezba uspesno dodata u plan!")
-//                    selectedExerciseForPlan = null
-//                }
+
+                val generatedId = exercise.exerciseId.lowercase().toLong(radix = 36)
+
+                val checkResponse = repository.getExerciseFromPlan(generatedId)
+                val finalExerciseId: Long = if (!checkResponse.isSuccessful) {
+                    Log.d("API", "Vežba ne postoji (500), kreiram novu...")
+                    Log.d("API", "description: ${exercise.instructions.joinToString(". ")}")
+                    val createRequest = CreateExerciseRequest(
+                        id = exercise.exerciseId.lowercase().toLong(radix = 36),
+                        name = exercise.name,
+                        muscleGroup = exercise.bodyParts.firstOrNull() ?: "Unknown",
+                        equipment = exercise.equipments.firstOrNull() ?: "None",
+                        description = exercise.instructions.joinToString(". ")
+                    )
+                    val createResponse = repository.createExercise(createRequest)
+
+                    if (createResponse!!.isSuccessful) {
+                        createResponse.body()?.id ?: throw Exception("Failed to get ID from creation")
+                    } else {
+                        throw Exception("Failed to create exercise")
+                    }
+                } else {
+                    checkResponse.body()?.id ?: generatedId
+                }
+                // TODO dodati da order dobija tako sto pozovemo /api/plan-exercises/plan/{planId} i uzmemo maks za order
+                val addRequest = AddExerciseToPlanRequest(
+                    planId = planId,
+                    exerciseId = finalExerciseId,
+                    orderIndex = 1,
+                    defaultSets = sets,
+                    defaultReps = reps,
+                    restSeconds = 60
+                )
+
+                val addResponse = repository.addExerciseToPlan(addRequest, planId)
+
+                if (addResponse.isSuccessful) {
+                    Log.d("API_DEBUG", "Vežba uspešno povezana sa planom!")
+                    selectedExerciseForPlan = null
+                    isSelectionMode = false
+                }
+                else{
+                    Log.d("API_DEBUG", "Vežba nije povezana sa planom!")
+                }
+
             } catch (e: Exception) {
-                Log.e("API", "Greška pri dodavanju vežbe: $e")
+                Log.e("API", "greska prilikom dodvanja: ${e.message}")
             }
         }
     }
@@ -133,7 +167,7 @@ class ExerciseViewModel @Inject constructor(
     fun loadPlans(){
         viewModelScope.launch(Dispatchers.IO) {
             try{
-            val response = repository.getPlans()
+                val response = repository.getPlans()
                 Log.e("API_DEBUG", "response body: "+response.body().toString()+ "  " + response.code())
             if(response.isSuccessful){
                 plans.clear()
@@ -153,6 +187,25 @@ class ExerciseViewModel @Inject constructor(
         viewModelScope.launch {
             repository.deletePlan(id)
             loadPlans()
+        }
+    }
+    val exerciseInPlan = mutableStateListOf<PlanExercisesResponse>()
+    fun loadPlanDetails(planId: Long) {
+        viewModelScope.launch (Dispatchers.IO){
+            try{
+                val response = repository.getPlanExercises(planId)
+                if(response.isSuccessful){
+                    launch(Dispatchers.Main){
+                        exerciseInPlan.clear()
+                        response.body()?.let {exerciseInPlan.addAll(it)}
+                    }
+                }else{
+                    Log.e("API_DEBUG","Greska pri ucitavanju vezbi: ${response.code()}" )
+                }
+            } catch (e: Exception){
+                Log.e("API_DEBUG", "Greška: $e")
+            }
+
         }
     }
 

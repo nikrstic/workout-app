@@ -5,3 +5,13 @@ data class WorkoutPlanResponse(
     val name : String,
     val description : String
 )
+data class PlanExercisesResponse(
+    val id: Long,
+    val planId: Long,
+    val exerciseId: String,
+    val exerciseName: String,
+    val orderIndex: Int,
+    val defaultSets: Int,
+    val defaultReps: Int,
+    val restSeconds: Int
+)

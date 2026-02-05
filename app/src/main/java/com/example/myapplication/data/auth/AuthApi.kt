@@ -1,10 +1,15 @@
 package com.example.myapplication.data.auth
 
 
+import com.example.myapplication.data.auth.requests.AddExerciseToPlanRequest
 import com.example.myapplication.data.auth.requests.LoginRequest
 import com.example.myapplication.data.auth.requests.RegisterRequest
 import com.example.myapplication.data.auth.requests.WorkoutPlanRequest
+import com.example.myapplication.data.auth.requests.CreateExerciseRequest
 import com.example.myapplication.data.auth.responses.AuthResponse
+import com.example.myapplication.data.auth.responses.CreateExerciseResponse
+import com.example.myapplication.data.auth.responses.ExerciseResponseById
+import com.example.myapplication.data.auth.responses.PlanExercisesResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -39,4 +44,23 @@ interface AuthApi {
     suspend fun deletePlan(
         @Path("planId") planId: Long
     ): Response<Unit>
+
+    @GET("api/exercises/{exerciseId}")
+    suspend fun getExerciseById(
+        @Path("exerciseId") exerciseId: Long
+    ): Response<ExerciseResponseById>
+    @POST("api/exercises/create")
+    suspend fun createExercise(
+        @Body request: CreateExerciseRequest
+    ):Response<CreateExerciseResponse>
+    @POST("api/plans/{planId}/exercises")
+    suspend fun addExerciseToPlan(
+        @Path("planId") planId: Long,
+        @Body request: AddExerciseToPlanRequest
+    ): Response<Unit>
+
+    @GET("api/plan-exercises/plan/{planId}")
+    suspend fun  getPlanExercises(
+        @Path("planId") planId: Long
+    ): Response<List<PlanExercisesResponse>>
 }
