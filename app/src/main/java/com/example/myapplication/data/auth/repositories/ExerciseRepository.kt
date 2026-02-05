@@ -131,4 +131,12 @@ class ExerciseRepository @Inject constructor(
     suspend fun getPlanExercises(planId: Long): Response<List<PlanExercisesResponse>> {
         return api.getPlanExercises(planId)
     }
+    suspend fun getNextOrderIndex(planId: Long): Int {
+        val response = api.getPlanExercises(planId)
+        if (response.isSuccessful) {
+            val exercises = response.body() ?: emptyList()
+            return (exercises.maxOfOrNull { it.orderIndex } ?: 0) + 1
+        }
+        return 1
+    }
 }

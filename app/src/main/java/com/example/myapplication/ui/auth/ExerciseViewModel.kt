@@ -132,11 +132,10 @@ class ExerciseViewModel @Inject constructor(
                 } else {
                     checkResponse.body()?.id ?: generatedId
                 }
-                // TODO dodati da order dobija tako sto pozovemo /api/plan-exercises/plan/{planId} i uzmemo maks za order
                 val addRequest = AddExerciseToPlanRequest(
                     planId = planId,
                     exerciseId = finalExerciseId,
-                    orderIndex = 1,
+                    orderIndex = repository.getNextOrderIndex(planId),
                     defaultSets = sets,
                     defaultReps = reps,
                     restSeconds = 60
