@@ -52,7 +52,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -60,6 +59,8 @@ import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import com.example.myapplication.data.model.Exercise
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 
 
@@ -110,6 +111,7 @@ fun FilterSection(
 fun ExerciseContent(
     viewModel: ExerciseViewModel,
     searchQuery: String,
+    snackbarHostState: SnackbarHostState,
     onQueryChange: (String)-> Unit,
     onExerciseClick: (Exercise) -> Unit
     ) {
@@ -119,7 +121,8 @@ fun ExerciseContent(
     Scaffold(
         topBar = {
             TopAppBar(title= {Text("Dostupne vezbe")})
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
         paddingValues ->
         Column(
@@ -289,9 +292,15 @@ fun ExerciseScreen(
     viewModel: ExerciseViewModel = hiltViewModel(),
     onBack: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(planId) {
         if (planId != null && planId != -1L) {
             viewModel.setPlanId(planId)
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.snackbarMessage.collect { message ->
+            snackbarHostState.showSnackbar(message)
         }
     }
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -300,6 +309,7 @@ fun ExerciseScreen(
         ExerciseContent(
             viewModel = viewModel,
             searchQuery = searchQuery,
+            snackbarHostState = snackbarHostState,
             onQueryChange = { newQuery ->
                 viewModel.searchQuery.value = newQuery
             },
@@ -404,5 +414,5 @@ fun ExercisePreview() {
             instructions = listOf("Uhvatite se za šipku", "Povucite se bradom iznad")
         )
     )
-    ExerciseContent(onExerciseClick = {}, viewModel = viewModel(), searchQuery = "Sklekovi", onQueryChange = {})
+    //ExerciseContent(onExerciseClick = {}, viewModel = viewModel(), searchQuery = "Sklekovi", onQueryChange = {})
 }

@@ -24,9 +24,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
@@ -49,6 +51,8 @@ class ExerciseViewModel @Inject constructor(
     var selectedExerciseForPlan by mutableStateOf<Exercise?>(null)
     var selectedPlanId by mutableStateOf<Long?>(null)
         private set
+    private val _snackbarMessage = MutableSharedFlow<String>()
+    val snackbarMessage = _snackbarMessage.asSharedFlow()
     val bodyPartNames: StateFlow<List<String>> = bodyPartList.map { list ->
         list.map { it.name }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -147,6 +151,7 @@ class ExerciseViewModel @Inject constructor(
                     Log.d("API_DEBUG", "Vežba uspešno povezana sa planom!")
                     selectedExerciseForPlan = null
                     isSelectionMode = false
+                    _snackbarMessage.emit("Vežba '${exercise.name}' je dodata!")
                 }
                 else{
                     Log.d("API_DEBUG", "Vežba nije povezana sa planom!")
