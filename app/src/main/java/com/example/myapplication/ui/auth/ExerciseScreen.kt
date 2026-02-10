@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,9 +34,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,13 +52,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import com.example.myapplication.data.model.Exercise
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
+
 
 @Composable
 fun FilterSection(
@@ -102,6 +111,7 @@ fun FilterSection(
 fun ExerciseContent(
     viewModel: ExerciseViewModel,
     searchQuery: String,
+    snackbarHostState: SnackbarHostState,
     onQueryChange: (String)-> Unit,
     onExerciseClick: (Exercise) -> Unit
     ) {
@@ -111,7 +121,8 @@ fun ExerciseContent(
     Scaffold(
         topBar = {
             TopAppBar(title= {Text("Dostupne vezbe")})
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
         paddingValues ->
         Column(
@@ -277,30 +288,105 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
 
 @Composable
 fun ExerciseScreen(
-    viewModel: ExerciseViewModel = hiltViewModel()
+    planId: Long? = null,
+    viewModel: ExerciseViewModel = hiltViewModel(),
+    onBack: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(planId) {
+        if (planId != null && planId != -1L) {
+            viewModel.setPlanId(planId)
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.snackbarMessage.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-
+    var showAddDetailsDialog by remember { mutableStateOf(false) }
     if(viewModel.selectedExercise == null){
         ExerciseContent(
             viewModel = viewModel,
             searchQuery = searchQuery,
+            snackbarHostState = snackbarHostState,
             onQueryChange = { newQuery ->
                 viewModel.searchQuery.value = newQuery
             },
             onExerciseClick = { exercise ->
-                viewModel.selectExercise(exercise)
+                if(viewModel.isSelectionMode){
+                    viewModel.selectedExerciseForPlan = exercise
+                    showAddDetailsDialog = true
+                }else {
+                    viewModel.selectExercise(exercise)
+                }
             }
         )
+            if(showAddDetailsDialog){
+                showAddDetailsDialog(
+                    exercise = viewModel.selectedExerciseForPlan,
+                    onDismiss = { showAddDetailsDialog = false},
+                    onConfirm = { sets, reps ->
+                        viewModel.selectedExerciseForPlan?.let { exercise->
+                            viewModel.addExerciseToPlan(exercise, sets, reps)
+                        }
+                        showAddDetailsDialog = false
+                    }
+                )
+            }
     } else {
         ExerciseDetailScreen(
             exercise = viewModel.selectedExercise!!,
             onBackClick = {
-
                 viewModel.selectExercise(null)
             }
         )
     }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun showAddDetailsDialog(
+    exercise: Exercise?,
+    onDismiss: ()-> Unit,
+    onConfirm: (sets: Int, reps: Int) -> Unit
+){
+    if(exercise== null) return
+
+    var setsText by remember { mutableStateOf("") }
+    var repsText by remember { mutableStateOf("") }
+    AlertDialog (
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Detalji za ${exercise.name}") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = setsText,
+                    onValueChange = { setsText = it },
+                    label = { Text("Broj serija") }
+                )
+                OutlinedTextField(
+                    value = repsText,
+                    onValueChange = { repsText = it },
+                    label = { Text("Broj ponavljanja") }
+                )
+
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(setsText.toInt(), repsText.toInt()) }) {
+                Text("Dodaj")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Otkaži")
+            }
+        }
+
+    )
+
 }
 
 @Preview(showBackground = true)
@@ -328,5 +414,5 @@ fun ExercisePreview() {
             instructions = listOf("Uhvatite se za šipku", "Povucite se bradom iznad")
         )
     )
-    ExerciseContent(onExerciseClick = {}, viewModel = viewModel(), searchQuery = "Sklekovi", onQueryChange = {})
+    //ExerciseContent(onExerciseClick = {}, viewModel = viewModel(), searchQuery = "Sklekovi", onQueryChange = {})
 }

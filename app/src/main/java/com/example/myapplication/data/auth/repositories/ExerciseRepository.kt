@@ -2,6 +2,14 @@ package com.example.myapplication.data.auth.repositories
 
 import android.content.Context
 import android.util.Log
+import com.example.myapplication.data.auth.AuthApi
+import com.example.myapplication.data.auth.requests.AddExerciseToPlanRequest
+import com.example.myapplication.data.auth.requests.CreateExerciseRequest
+import com.example.myapplication.data.auth.requests.WorkoutPlanRequest
+import com.example.myapplication.data.auth.responses.CreateExerciseResponse
+import com.example.myapplication.data.auth.responses.ExerciseResponseById
+import com.example.myapplication.data.auth.responses.PlanExercisesResponse
+import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
 import com.example.myapplication.data.model.Equipment
 import com.example.myapplication.data.model.Exercise
@@ -10,12 +18,14 @@ import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ExerciseRepository @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val api: AuthApi
 ) {
     private var bodyPartsCache: List<BodyPart>? = null
     private var equipmentsCache: List<Equipment>? = null
@@ -88,6 +98,48 @@ class ExerciseRepository @Inject constructor(
 
         Gson().fromJson(jsonString, object : TypeToken<T>() {}.type)
     }
+    // workoutPlans
 
+    suspend fun getExerciseById(id: String): Exercise? {
+        return getAllExercises().find { it.exerciseId == id }
+    }
+    suspend fun  getPlans(): Response<List<WorkoutPlanResponse>>{
+        return api.getPlans()
+    }
+    suspend fun createPlan(name: String, description: String): Response<WorkoutPlanResponse>{
+        val response = api.createPlan(WorkoutPlanRequest(name,description))
+        return response
+    }
+    suspend fun  deletePlan(id: Long): Response<Unit>{
+        return api.deletePlan(id)
+    }
+    suspend fun getExerciseFromPlan(id: Long):Response<ExerciseResponseById>{
+        return api.getExerciseById(id)
+    }
+    suspend fun createExercise(request: CreateExerciseRequest):Response<CreateExerciseResponse>?{
+        try{
+            return api.createExercise(request)
+        } catch (e: Exception){
+            Log.e("API_DEBUG", "greska prilikom kreiranja vezbe ${e}")
+            return null
+        }
+    }
+    suspend fun addExerciseToPlan(request: AddExerciseToPlanRequest, planId:Long): Response<Unit>{
+        return api.addExerciseToPlan(planId,request)
+    }
 
+    suspend fun getPlanExercises(planId: Long): Response<List<PlanExercisesResponse>> {
+        return api.getPlanExercises(planId)
+    }
+    suspend fun getNextOrderIndex(planId: Long): Int {
+        val response = api.getPlanExercises(planId)
+        if (response.isSuccessful) {
+            val exercises = response.body() ?: emptyList()
+            return (exercises.maxOfOrNull { it.orderIndex } ?: 0) + 1
+        }
+        return 1
+    }
+    suspend fun  deleteExercise(id: Long): Response<Unit>{
+        return api.deletePlanExercise(id)
+    }
 }
