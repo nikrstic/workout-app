@@ -16,10 +16,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.myapplication.data.auth.responses.PlanExercisesResponse
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +37,7 @@ fun PlanDetailScreen(
 ){
     LaunchedEffect(planId) {
         viewModel.loadPlanDetails(planId)
+        viewModel.setPlanId(planId)
     }
     val exercises = viewModel.exerciseInPlan
     Scaffold(
@@ -53,7 +61,9 @@ fun PlanDetailScreen(
             if (exercises.isNotEmpty()) {
                 LazyColumn {
                     items(exercises) { item ->
-                        ExerciseItemRow(item)
+                        ExerciseItemRow(item=item) {
+                            viewModel.deleteExercise(item.id)
+                        }
                     }
                 }
             } else {
@@ -68,13 +78,24 @@ fun PlanDetailScreen(
 
 }
 @Composable
-fun ExerciseItemRow(item: PlanExercisesResponse) {
+fun ExerciseItemRow(
+    item: PlanExercisesResponse,
+    onDeleteClick: (Long) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    ){
+    Row(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    )
+    {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = item.exerciseName,
                 style = typography.titleMedium
@@ -84,6 +105,14 @@ fun ExerciseItemRow(item: PlanExercisesResponse) {
                 style = typography.titleMedium
             )
         }
+        IconButton(onClick = { onDeleteClick(item.id) }) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Obriši vežbu",
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+    }
     }
 }
 

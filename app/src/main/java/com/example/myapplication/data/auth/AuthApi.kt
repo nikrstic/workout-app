@@ -63,4 +63,9 @@ interface AuthApi {
     suspend fun  getPlanExercises(
         @Path("planId") planId: Long
     ): Response<List<PlanExercisesResponse>>
+
+    @DELETE("api/plan-exercises/{id}")
+    suspend fun deletePlanExercise(
+        @Path("id") id: Long
+    ): Response<Unit>
 }

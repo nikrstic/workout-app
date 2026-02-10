@@ -139,4 +139,7 @@ class ExerciseRepository @Inject constructor(
         }
         return 1
     }
+    suspend fun  deleteExercise(id: Long): Response<Unit>{
+        return api.deletePlanExercise(id)
+    }
 }

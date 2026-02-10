@@ -150,7 +150,6 @@ class ExerciseViewModel @Inject constructor(
                 if (addResponse.isSuccessful) {
                     Log.d("API_DEBUG", "Vežba uspešno povezana sa planom!")
                     selectedExerciseForPlan = null
-                    isSelectionMode = false
                     _snackbarMessage.emit("Vežba '${exercise.name}' je dodata!")
                 }
                 else{
@@ -191,6 +190,22 @@ class ExerciseViewModel @Inject constructor(
         viewModelScope.launch {
             repository.deletePlan(id)
             loadPlans()
+        }
+    }
+    fun deleteExercise(exerciseId: Long) {
+        val currentPlanId = selectedPlanId
+        if (currentPlanId == null) {
+            Log.e("API_DEBUG", "Brisanje neuspesno: selectedPlanId je NULL")
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.deleteExercise(exerciseId)
+                loadPlanDetails(currentPlanId)
+            } catch (e: Exception) {
+                Log.e("API", "Greska pri brisanju: ${e.message}")
+            }
         }
     }
     val exerciseInPlan = mutableStateListOf<PlanExercisesResponse>()
