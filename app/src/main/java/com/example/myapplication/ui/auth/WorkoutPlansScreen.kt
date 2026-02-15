@@ -35,7 +35,7 @@ fun WorkoutPlanScreen(
     Scaffold(
         topBar = { TopAppBar(title = { Text("Moji planovi") }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showCreateDialog = true }) {
+            FloatingActionButton(onClick = { showCreateDialog = true },modifier = Modifier.padding(32.dp)) {
                 Icon(Icons.Default.Add, contentDescription = "Dodaj plan")
             }
         }
@@ -92,13 +92,13 @@ fun WorkoutPlanScreen(
                             }){
                                 Icon(
                                     Icons.Default.Add,
-                                    contentDescription = "Dodaj",
+                                    contentDescription = "Add",
                                     tint = MaterialTheme.colorScheme.primary)
                             }
                             IconButton(onClick = { planToDelete = plan.id }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Obriši",
+                                    contentDescription = "Delete",
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }

@@ -15,18 +15,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,25 +40,11 @@ import com.example.myapplication.data.model.Exercise
 @Composable
 fun ExerciseDetailScreen (
     exercise: Exercise,
-    onBackClick: ()-> Unit
+    onBackClick: () -> Unit,
 ){
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {Text(exercise.name.uppercase(), style = MaterialTheme.typography.titleMedium)},
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Nazad")
-                    }
-                }
-            )
-        }
-    ) {
-        paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
 
         ){
@@ -97,8 +77,6 @@ fun ExerciseDetailScreen (
                 InfoTag(text = exercise.equipments.firstOrNull() ?: "", containerColor = MaterialTheme.colorScheme.secondaryContainer)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
             Text(
                 text = "Instrukcije korak po korak",
                 style = MaterialTheme.typography.headlineSmall,
@@ -112,9 +90,8 @@ fun ExerciseDetailScreen (
                 InstructionStep(index = index + 1, text = instruction)
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(52.dp))
         }
-    }
 }
 @Composable
 fun InfoTag(text: String, containerColor: Color) {

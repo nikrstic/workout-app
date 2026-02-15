@@ -14,7 +14,6 @@ import com.example.myapplication.data.auth.repositories.ExercisePagingSource
 import com.example.myapplication.data.auth.repositories.ExerciseRepository
 import com.example.myapplication.data.auth.requests.AddExerciseToPlanRequest
 import com.example.myapplication.data.auth.requests.CreateExerciseRequest
-import com.example.myapplication.data.auth.requests.PlanExerciseRequest
 import com.example.myapplication.data.auth.responses.PlanExercisesResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import com.example.myapplication.data.model.BodyPart
@@ -40,7 +39,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ExerciseViewModel @Inject constructor(
     private val repository: ExerciseRepository
-): ViewModel() {
+) : ViewModel() {
 
     val searchQuery = MutableStateFlow("")
     var selectedBodyPart = MutableStateFlow<String?>(null)
@@ -57,20 +56,21 @@ class ExerciseViewModel @Inject constructor(
         list.map { it.name }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val equipmentNames:StateFlow<List<String>> = equipmentList.map { list ->
+    val equipmentNames: StateFlow<List<String>> = equipmentList.map { list ->
         list.map { it.name }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     private val filterState = combine(
         searchQuery,
         selectedBodyPart,
         selectedEquipment
-    ){
-        query, bodyPart, equipment ->
-        Triple(query,bodyPart,equipment)
+    ) { query, bodyPart, equipment ->
+        Triple(query, bodyPart, equipment)
     }
+
     init {
         loadFilterData()
     }
+
     private fun loadFilterData() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -83,15 +83,17 @@ class ExerciseViewModel @Inject constructor(
             }
         }
     }
+
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-    val exercisePagingFlow = filterState.debounce(300).flatMapLatest { (query, bodyPart, equipment)->
-        Pager(
-            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = {
-                ExercisePagingSource(repository, query, bodyPart, equipment)
-            }
-        ).flow
-    }.cachedIn(viewModelScope)
+    val exercisePagingFlow =
+        filterState.debounce(300).flatMapLatest { (query, bodyPart, equipment) ->
+            Pager(
+                config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+                pagingSourceFactory = {
+                    ExercisePagingSource(repository, query, bodyPart, equipment)
+                }
+            ).flow
+        }.cachedIn(viewModelScope)
 
 
     var selectedExercise by mutableStateOf<Exercise?>(null)
@@ -100,98 +102,127 @@ class ExerciseViewModel @Inject constructor(
     fun selectExercise(exercise: Exercise?) {
         selectedExercise = exercise
     }
-    fun selectBodyPart(bodyPart: String?){
-        selectedBodyPart.value= if (selectedBodyPart.value == bodyPart) null else bodyPart
+
+    fun selectBodyPart(bodyPart: String?) {
+        selectedBodyPart.value = if (selectedBodyPart.value == bodyPart) null else bodyPart
     }
-    fun selectEquipment(equipment: String?){
-        selectedEquipment.value = if(selectedEquipment.value == equipment) null else equipment
+
+    fun selectEquipment(equipment: String?) {
+        selectedEquipment.value = if (selectedEquipment.value == equipment) null else equipment
     }
-    private  val _addedExercises = mutableStateListOf<PlanExerciseRequest>()
+
+    private val _addedExercises = mutableStateListOf<AddExerciseToPlanRequest>()
     fun addExerciseToPlan(exercise: Exercise, sets: Int, reps: Int) {
         val planId = selectedPlanId ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val currentGif = exercise.gif
+                Log.d("API_DEBUG", "Original exercise.gif: $currentGif")
 
-                val generatedId = exercise.exerciseId.lowercase().toLong(radix = 36)
+                val generatedId = exercise.exerciseId.toLong(radix = 36)
 
                 val checkResponse = repository.getExerciseFromPlan(generatedId)
                 val finalExerciseId: Long = if (!checkResponse.isSuccessful) {
                     Log.d("API", "Vežba ne postoji (500), kreiram novu...")
                     Log.d("API", "description: ${exercise.instructions.joinToString(". ")}")
                     val createRequest = CreateExerciseRequest(
-                        id = exercise.exerciseId.lowercase().toLong(radix = 36),
+                        id = exercise.exerciseId.toLong(radix = 36),
                         name = exercise.name,
                         muscleGroup = exercise.bodyParts.firstOrNull() ?: "Unknown",
                         equipment = exercise.equipments.firstOrNull() ?: "None",
-                        description = exercise.instructions.joinToString(". ")
+                        description = exercise.instructions.joinToString(". "),
+                        gif = currentGif
                     )
+                    Log.d("API_DEBUG", "CreateRequest gif: ${createRequest.gif}")
                     val createResponse = repository.createExercise(createRequest)
 
                     if (createResponse!!.isSuccessful) {
-                        createResponse.body()?.id ?: throw Exception("Failed to get ID from creation")
+                        val createdExercise = createResponse.body()
+                        Log.d("API_DEBUG", "Created exercise gif from response: ${createdExercise?.gif}")
+                        createResponse.body()?.id
+                            ?: throw Exception("Failed to get ID from creation")
                     } else {
                         throw Exception("Failed to create exercise")
                     }
                 } else {
                     checkResponse.body()?.id ?: generatedId
                 }
+
+                Log.d("API_DEBUG", "Slanje addRequest: ID=$finalExerciseId, GIF=$currentGif")
+
                 val addRequest = AddExerciseToPlanRequest(
                     planId = planId,
                     exerciseId = finalExerciseId,
                     orderIndex = repository.getNextOrderIndex(planId),
                     defaultSets = sets,
                     defaultReps = reps,
-                    restSeconds = 60
+                    restSeconds = 60,
+                    gif = currentGif
                 )
+                Log.d("API_DEBUG", "AddRequest object - gif: ${addRequest.gif}")
 
                 val addResponse = repository.addExerciseToPlan(addRequest, planId)
+                Log.d("API_DEBUG", "addResponse code: ${addResponse.code()}")
+                Log.d("API_DEBUG", "addResponse body: ${addResponse.body()}")
+                Log.d("API_DEBUG", "addResponse error: ${addResponse.errorBody()?.string()}")
 
+                Log.d("API_DEBUG", "addResponse: ${addResponse.message()}")
                 if (addResponse.isSuccessful) {
-                    Log.d("API_DEBUG", "Vežba uspešno povezana sa planom!")
+                    Log.d("API_DEBUG", "Vezba uspesno povezana sa planom!")
+
                     selectedExerciseForPlan = null
-                    _snackbarMessage.emit("Vežba '${exercise.name}' je dodata!")
-                }
-                else{
-                    Log.d("API_DEBUG", "Vežba nije povezana sa planom!")
+                    _snackbarMessage.emit("Vezba '${exercise.name}' je dodata!")
+                } else {
+                    Log.d("API_DEBUG", "Vezba nije povezana sa planom!")
                 }
 
             } catch (e: Exception) {
+                e.printStackTrace()
                 Log.e("API", "greska prilikom dodvanja: ${e.message}")
             }
         }
     }
 
-    fun setPlanId(id: Long){
+    fun setPlanId(id: Long) {
         selectedPlanId = id
         isSelectionMode = true
     }
-    val plans = mutableStateListOf<WorkoutPlanResponse>()
-    fun loadPlans(){
-        viewModelScope.launch(Dispatchers.IO) {
-            try{
-                val response = repository.getPlans()
-                Log.e("API_DEBUG", "response body: "+response.body().toString()+ "  " + response.code())
-            if(response.isSuccessful){
-                plans.clear()
-                response.body()?.let {plans.addAll(it)}
-            }
 
-        }catch (e: Exception) {Log.e("API_DEBUG", "Error: $e")}
+    val plans = mutableStateListOf<WorkoutPlanResponse>()
+    fun loadPlans() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = repository.getPlans()
+                Log.e(
+                    "API_DEBUG",
+                    "response body: " + response.body().toString() + "  " + response.code()
+                )
+                if (response.isSuccessful) {
+                    plans.clear()
+                    response.body()?.let { plans.addAll(it) }
+                }
+
+            } catch (e: Exception) {
+                Log.e("API_DEBUG", "Error: $e")
+            }
         }
     }
+
     fun createPlan(name: String, desc: String) {
         viewModelScope.launch {
             repository.createPlan(name, desc)
             loadPlans()
         }
     }
-    fun deletePlan(id: Long){
+
+    fun deletePlan(id: Long) {
         viewModelScope.launch {
             repository.deletePlan(id)
             loadPlans()
         }
     }
+
     fun deleteExercise(exerciseId: Long) {
         val currentPlanId = selectedPlanId
         if (currentPlanId == null) {
@@ -208,20 +239,21 @@ class ExerciseViewModel @Inject constructor(
             }
         }
     }
+
     val exerciseInPlan = mutableStateListOf<PlanExercisesResponse>()
     fun loadPlanDetails(planId: Long) {
-        viewModelScope.launch (Dispatchers.IO){
-            try{
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
                 val response = repository.getPlanExercises(planId)
-                if(response.isSuccessful){
-                    launch(Dispatchers.Main){
+                if (response.isSuccessful) {
+                    launch(Dispatchers.Main) {
                         exerciseInPlan.clear()
-                        response.body()?.let {exerciseInPlan.addAll(it)}
+                        response.body()?.let { exerciseInPlan.addAll(it) }
                     }
-                }else{
-                    Log.e("API_DEBUG","Greska pri ucitavanju vezbi: ${response.code()}" )
+                } else {
+                    Log.e("API_DEBUG", "Greska pri ucitavanju vezbi: ${response.code()}")
                 }
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 Log.e("API_DEBUG", "Greška: $e")
             }
 
