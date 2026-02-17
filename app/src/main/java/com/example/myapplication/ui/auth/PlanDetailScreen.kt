@@ -27,12 +27,14 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanDetailScreen(
     planId: Long,
     viewModel: ExerciseViewModel = hiltViewModel(),
+    navController: NavController,
     onBack: () -> Unit
 ){
     LaunchedEffect(planId) {
@@ -44,7 +46,7 @@ fun PlanDetailScreen(
         topBar = { TopAppBar(title = { Text ("Detalji plana")})},
         bottomBar = {
             Button(
-                onClick = {},
+                onClick = { navController.navigate("active_workout/$planId")},
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(12.dp)
             ){

@@ -13,7 +13,7 @@ import androidx.navigation.navArgument
 import com.example.myapplication.ui.auth.AuthViewModel
 import com.example.myapplication.ui.auth.ExerciseScreen
 import com.example.myapplication.ui.auth.LoginScreen
-import com.example.myapplication.ui.auth.MyWorkoutSessionsScreen
+import com.example.myapplication.ui.auth.WorkoutSessionScreen
 import com.example.myapplication.ui.auth.PlanDetailScreen
 import com.example.myapplication.ui.auth.RegisterScreen
 import com.example.myapplication.ui.auth.WorkoutPlanScreen
@@ -45,9 +45,23 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
             )
         }
-        composable("sessions") {
-            MyWorkoutSessionsScreen()
+
+        composable (
+            route = "active_workout/{planId}",
+            arguments = listOf(navArgument("planId"){ type = NavType.LongType})
+        ){backStackEntry->
+            val planId = backStackEntry.arguments?.getLong("planId") ?: -1L
+            WorkoutSessionScreen(
+                planId = planId,
+                onFinish = {
+                    navController.navigate("sessions"){
+                        popUpTo("active_workout/{planId}") { inclusive = true }
+                    }
+                }
+            )
+
         }
+
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
@@ -96,7 +110,8 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             val planId = backStackEntry.arguments?.getLong("planId") ?: -1L
             PlanDetailScreen(
                 planId = planId,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                navController = navController
             )
         }
     }

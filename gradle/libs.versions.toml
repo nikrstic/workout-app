@@ -23,6 +23,8 @@ hilt="2.57.2"
 ksp = "2.0.21-1.0.27"
 pagingCommon = "3.3.6"
 material3 = "1.4.0"
+protoliteWellKnownTypes = "18.0.1"
+foundationLayout = "1.10.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +59,8 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "daggerCompiler" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "pagingCommon" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+protolite-well-known-types = { group = "com.google.firebase", name = "protolite-well-known-types", version.ref = "protoliteWellKnownTypes" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

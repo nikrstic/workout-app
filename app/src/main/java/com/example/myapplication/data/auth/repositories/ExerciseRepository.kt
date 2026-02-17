@@ -128,7 +128,7 @@ class ExerciseRepository @Inject constructor(
         return api.addExerciseToPlan(planId,request)
     }
 
-    suspend fun getPlanExercises(planId: Long): Response<List<PlanExercisesResponse>> {
+    suspend fun getPlanExercises(planId: Long?): Response<List<PlanExercisesResponse>> {
         return api.getPlanExercises(planId)
     }
     suspend fun getNextOrderIndex(planId: Long): Int {

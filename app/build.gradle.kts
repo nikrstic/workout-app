@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.androidx.paging.common)
     implementation("androidx.paging:paging-compose:3.3.6")
     implementation(libs.androidx.material3)
+    implementation(libs.protolite.well.known.types)
+    implementation(libs.androidx.compose.foundation.layout)
     ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation("androidx.datastore:datastore-preferences-android:1.2.0")
