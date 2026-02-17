@@ -5,5 +5,6 @@ data class CreateExerciseRequest(
     val name: String,
     val muscleGroup: String,
     val equipment: String,
-    val description: String
+    val description: String,
+    val gif: String
 )
