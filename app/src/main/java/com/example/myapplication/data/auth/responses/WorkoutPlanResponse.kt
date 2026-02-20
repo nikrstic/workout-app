@@ -8,7 +8,7 @@ data class WorkoutPlanResponse(
 data class PlanExercisesResponse(
     val id: Long,
     val planId: Long,
-    val exerciseId: String,
+    val exerciseId: Long,
     val exerciseName: String,
     val orderIndex: Int,
     val defaultSets: Int,

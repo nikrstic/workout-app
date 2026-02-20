@@ -23,6 +23,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.myapplication.data.auth.responses.PlanExercisesResponse
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +44,13 @@ fun PlanDetailScreen(
     }
     val exercises = viewModel.exerciseInPlan
     Scaffold(
-        topBar = { TopAppBar(title = { Text ("Detalji plana")})},
+        topBar = { TopAppBar(title = { Text ("Detalji plana")},
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Nazad")
+                }
+            }
+        )},
         bottomBar = {
             Button(
                 onClick = { navController.navigate("active_workout/$planId")},

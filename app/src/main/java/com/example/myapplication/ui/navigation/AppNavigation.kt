@@ -54,7 +54,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             WorkoutSessionScreen(
                 planId = planId,
                 onFinish = {
-                    navController.navigate("sessions"){
+                    navController.navigate("workout_plans"){
                         popUpTo("active_workout/{planId}") { inclusive = true }
                     }
                 }

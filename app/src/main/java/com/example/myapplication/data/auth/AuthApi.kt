@@ -7,12 +7,16 @@ import com.example.myapplication.data.auth.requests.RegisterRequest
 import com.example.myapplication.data.auth.requests.WorkoutPlanRequest
 import com.example.myapplication.data.auth.requests.CreateExerciseRequest
 import com.example.myapplication.data.auth.requests.CreateWorkoutSessionRequest
+import com.example.myapplication.data.auth.requests.FinishSessionRequest
+import com.example.myapplication.data.auth.requests.SessionExerciseRequest
 import com.example.myapplication.data.auth.requests.SetRequest
 import com.example.myapplication.data.auth.responses.AuthResponse
 import com.example.myapplication.data.auth.responses.CreateExerciseResponse
 import com.example.myapplication.data.auth.responses.CreateWorkoutSessionResponse
 import com.example.myapplication.data.auth.responses.ExerciseResponseById
 import com.example.myapplication.data.auth.responses.PlanExercisesResponse
+import com.example.myapplication.data.auth.responses.SessionExerciseResponse
+import com.example.myapplication.data.auth.responses.SessionsResponse
 import com.example.myapplication.data.auth.responses.SetResponse
 import com.example.myapplication.data.auth.responses.WorkoutPlanResponse
 import retrofit2.Response
@@ -81,7 +85,7 @@ interface AuthApi {
 
     @PUT("api/sessions/finish/{sessionId}")
     suspend fun finishWorkoutSession(
-        @Body durationMinutes: Int,
+        @Body request: FinishSessionRequest,
         @Path("sessionId") sessionId: Long
     ): Response<Unit>
 
@@ -89,4 +93,12 @@ interface AuthApi {
     suspend fun addSetToSession(
         @Body request: SetRequest
     ): Response<SetResponse>
+
+    @POST("api/session-exercises")
+    suspend fun addExerciseToWorkoutSession(
+        @Body request: SessionExerciseRequest
+    ): Response<SessionExerciseResponse>
+
+    @GET("api/sessions/user")
+    suspend fun listSessions(): Response<List<SessionsResponse>>
 }

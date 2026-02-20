@@ -115,6 +115,7 @@ fun ExerciseContent(
     onQueryChange: (String)-> Unit,
     onExerciseClick: (Exercise) -> Unit
     ) {
+
     val selectedPart by viewModel.selectedBodyPart.collectAsStateWithLifecycle()
     val selectedEq by viewModel.selectedEquipment.collectAsStateWithLifecycle()
 
