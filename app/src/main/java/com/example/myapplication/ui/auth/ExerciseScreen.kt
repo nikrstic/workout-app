@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -64,13 +63,14 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 
+
 @Composable
 fun FilterSection(
     title: String,
     items: List<String>,
     selectedItem: String?,
     onItemClick: (String?) -> Unit
-) {
+){
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(
             text = title,
@@ -80,16 +80,16 @@ fun FilterSection(
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp),
+            contentPadding =PaddingValues(horizontal = 16.dp),
             modifier = Modifier.fillMaxWidth()
-        ) {
-            items(items.size) { item ->
+        ){
+            items(items.size){item->
                 FilterChip(
                     selected = items[item] == selectedItem,
-                    onClick = { onItemClick(items[item]) },
+                    onClick = { onItemClick(items[item])},
                     label = {
                         Text(
-                            text = items[item].replaceFirstChar { it.uppercase() },
+                            text = items[item].replaceFirstChar{ it.uppercase()},
                             style = MaterialTheme.typography.bodyMedium
                         )
                     },
@@ -111,106 +111,110 @@ fun FilterSection(
 fun ExerciseContent(
     viewModel: ExerciseViewModel,
     searchQuery: String,
-    onQueryChange: (String) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    onQueryChange: (String)-> Unit,
     onExerciseClick: (Exercise) -> Unit
 ) {
+
     val selectedPart by viewModel.selectedBodyPart.collectAsStateWithLifecycle()
     val selectedEq by viewModel.selectedEquipment.collectAsStateWithLifecycle()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
+    Scaffold(
+        topBar = {
+            TopAppBar(title= {Text("Dostupne vezbe")})
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
-        val lazyExerciseItems = viewModel.exercisePagingFlow.collectAsLazyPagingItems()
-
-        val bodyPartNames by viewModel.bodyPartNames.collectAsStateWithLifecycle()
-        val equipmentNames by viewModel.equipmentNames.collectAsStateWithLifecycle()
-
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onQueryChange,
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            placeholder = { Text("Pretraži vežbe") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(
-                        onClick = { onQueryChange("") }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Obrisi"
-                        )
-                    }
-                }
-            }
-        )
-        FilterSection(
-            title = "Deo tela",
-            items = bodyPartNames,
-            selectedItem = selectedPart,
-            onItemClick = { viewModel.selectBodyPart(it) }
-        )
-        FilterSection(
-            title = "Oprema",
-            items = equipmentNames,
-            selectedItem = selectedEq,
-            onItemClick = { viewModel.selectEquipment(it) }
-
-        )
-
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            paddingValues ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
-        ) {
-            items(count = lazyExerciseItems.itemCount) { index ->
-                val exercise = lazyExerciseItems[index]
-                if (exercise != null) {
-                    ExerciseItem(exercise = exercise, onClick = { onExerciseClick(exercise) })
-                }
-            }
-            lazyExerciseItems.apply {
-                when {
-                    loadState.refresh is LoadState.Loading -> {
-                        item {
-                            Box(
-                                Modifier.fillParentMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
+                .padding(paddingValues)
+        ){
+            val lazyExerciseItems = viewModel.exercisePagingFlow.collectAsLazyPagingItems()
 
-                    loadState.append is LoadState.Loading -> {
-                        item {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                                    .wrapContentWidth(Alignment.CenterHorizontally)
+            val bodyPartNames by viewModel.bodyPartNames.collectAsStateWithLifecycle()
+            val equipmentNames by viewModel.equipmentNames.collectAsStateWithLifecycle()
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange =  onQueryChange ,
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                placeholder = { Text("Pretraži vežbe") },
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()){
+                        IconButton(
+                            onClick = { onQueryChange("")}
+                        ){
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription= "Obrisi"
                             )
                         }
                     }
+                }
+            )
+            FilterSection(
+                title = "Deo tela",
+                items = bodyPartNames,
+                selectedItem = selectedPart,
+                onItemClick = { viewModel.selectBodyPart(it)}
+            )
+            FilterSection(
+                title = "Oprema",
+                items = equipmentNames ,
+                selectedItem = selectedEq,
+                onItemClick = { viewModel.selectEquipment(it)}
 
-                    loadState.refresh is LoadState.Error -> {
-                        val e = lazyExerciseItems.loadState.refresh as LoadState.Error
-                        item { Text("Greska: ${e.error.localizedMessage}") }
+            )
+
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize().weight(1f)
+            ) {
+                items(count = lazyExerciseItems.itemCount) { index ->
+                    val exercise = lazyExerciseItems[index]
+                    if (exercise != null) {
+                        ExerciseItem(exercise = exercise, onClick = { onExerciseClick(exercise) })
+                    }
+                }
+                lazyExerciseItems.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item {
+                                Box(
+                                    Modifier.fillParentMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                        .wrapContentWidth(Alignment.CenterHorizontally)
+                                )
+                            }
+                        }
+
+                        loadState.refresh is LoadState.Error -> {
+                            val e = lazyExerciseItems.loadState.refresh as LoadState.Error
+                            item { Text("Greska: ${e.error.localizedMessage}") }
+                        }
                     }
                 }
             }
-        }
 
+        }
     }
 
 }
-
 @Composable
 fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
     Card(
@@ -229,6 +233,17 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             val gifPath = "file:///android_asset/gifs/${exercise.gif}"
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(gifPath)
+                    .decoderFactory(GifDecoder.Factory())
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -236,17 +251,6 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.Center
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(gifPath)
-                        .decoderFactory(GifDecoder.Factory())
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
                 Text(
                     text = exercise.name.replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.titleMedium,
@@ -283,7 +287,6 @@ fun ExerciseItem(exercise: Exercise, onClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseScreen(
     planId: Long? = null,
@@ -303,72 +306,42 @@ fun ExerciseScreen(
     }
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     var showAddDetailsDialog by remember { mutableStateOf(false) }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(if (viewModel.selectedExercise == null) "Dostupne vežbe" else "Detalji vežbe")
-                },
-                navigationIcon =
-                    {
-                        IconButton(onClick = {
-                            if (viewModel.selectedExercise != null) {
-                                viewModel.selectExercise(null)
-                            } else {
-                                onBack()
-                            }
-                        })
-                        {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    })
-        },
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.padding(bottom = 50.dp)
+    if(viewModel.selectedExercise == null){
+        ExerciseContent(
+            viewModel = viewModel,
+            searchQuery = searchQuery,
+            snackbarHostState = snackbarHostState,
+            onQueryChange = { newQuery ->
+                viewModel.searchQuery.value = newQuery
+            },
+            onExerciseClick = { exercise ->
+                if(viewModel.isSelectionMode){
+                    viewModel.selectedExerciseForPlan = exercise
+                    showAddDetailsDialog = true
+                }else {
+                    viewModel.selectExercise(exercise)
+                }
+            }
+        )
+        if(showAddDetailsDialog){
+            showAddDetailsDialog(
+                exercise = viewModel.selectedExerciseForPlan,
+                onDismiss = { showAddDetailsDialog = false},
+                onConfirm = { sets, reps ->
+                    viewModel.selectedExerciseForPlan?.let { exercise->
+                        viewModel.addExerciseToPlan(exercise, sets, reps)
+                    }
+                    showAddDetailsDialog = false
+                }
             )
         }
-    )
-    { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            if (viewModel.selectedExercise == null) {
-                ExerciseContent(
-                    viewModel = viewModel,
-                    searchQuery = searchQuery,
-                    onQueryChange = { newQuery ->
-                        viewModel.searchQuery.value = newQuery
-                    },
-                    onExerciseClick = { exercise ->
-                        if (viewModel.isSelectionMode) {
-                            viewModel.selectedExerciseForPlan = exercise
-                            showAddDetailsDialog = true
-                        } else {
-                            viewModel.selectExercise(exercise)
-                        }
-                    }
-                )
-                if (showAddDetailsDialog) {
-                    showAddDetailsDialog(
-                        exercise = viewModel.selectedExerciseForPlan,
-                        onDismiss = { showAddDetailsDialog = false },
-                        onConfirm = { sets, reps ->
-                            viewModel.selectedExerciseForPlan?.let { exercise ->
-                                viewModel.addExerciseToPlan(exercise, sets, reps)
-                            }
-                            showAddDetailsDialog = false
-                        }
-                    )
-                }
-            } else {
-                ExerciseDetailScreen(
-                    exercise = viewModel.selectedExercise!!,
-                    onBackClick = {
-                        viewModel.selectExercise(null)
-                    }
-                )
+    } else {
+        ExerciseDetailScreen(
+            exercise = viewModel.selectedExercise!!,
+            onBackClick = {
+                viewModel.selectExercise(null)
             }
-        }
+        )
     }
 }
 
@@ -377,14 +350,14 @@ fun ExerciseScreen(
 @Composable
 fun showAddDetailsDialog(
     exercise: Exercise?,
-    onDismiss: () -> Unit,
+    onDismiss: ()-> Unit,
     onConfirm: (sets: Int, reps: Int) -> Unit
-) {
-    if (exercise == null) return
+){
+    if(exercise== null) return
 
     var setsText by remember { mutableStateOf("") }
     var repsText by remember { mutableStateOf("") }
-    AlertDialog(
+    AlertDialog (
         onDismissRequest = onDismiss,
         title = { Text(text = "Detalji za ${exercise.name}") },
         text = {
