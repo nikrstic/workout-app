@@ -33,7 +33,7 @@ class WorkoutSessionRepository @Inject constructor(
     suspend fun finishWorkoutSession(durationMinutes: Int, sessionId: Long): Response<Unit>
     {
         val request = FinishSessionRequest(durationMinutes)
-        return api.finishWorkoutSession(request, sessionId)
+        return api.finishWorkoutSession(sessionId, request)
     }
 
     suspend fun addSessionExercise(

@@ -85,8 +85,8 @@ interface AuthApi {
 
     @PUT("api/sessions/finish/{sessionId}")
     suspend fun finishWorkoutSession(
-        @Body request: FinishSessionRequest,
-        @Path("sessionId") sessionId: Long
+        @Path("sessionId") sessionId: Long,
+        @Body request: FinishSessionRequest
     ): Response<Unit>
 
     @POST("api/sets")
