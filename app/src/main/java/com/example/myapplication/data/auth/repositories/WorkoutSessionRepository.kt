@@ -8,6 +8,7 @@ import com.example.myapplication.data.auth.requests.SessionExerciseRequest
 import com.example.myapplication.data.auth.requests.SetRequest
 import com.example.myapplication.data.auth.responses.CreateWorkoutSessionResponse
 import com.example.myapplication.data.auth.responses.SessionExerciseResponse
+import com.example.myapplication.data.auth.responses.SessionsResponse
 import com.example.myapplication.data.auth.responses.SetResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Response
@@ -41,5 +42,7 @@ class WorkoutSessionRepository @Inject constructor(
     ):Response<SessionExerciseResponse> {
         return api.addExerciseToWorkoutSession(requestForSessionExercise)
     }
-
+    suspend fun listSessions(): Response<List<SessionsResponse>>{
+        return api.listSessions()
+    }
 }

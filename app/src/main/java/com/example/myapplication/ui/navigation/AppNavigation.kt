@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.myapplication.ui.auth.AllSessionsScreen
 import com.example.myapplication.ui.auth.AuthViewModel
 import com.example.myapplication.ui.auth.ExerciseScreen
 import com.example.myapplication.ui.auth.LoginScreen
@@ -62,7 +63,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             WorkoutSessionScreen(
                 planId = planId,
                 onFinish = {
-                    navController.navigate("workout_plans"){
+                    navController.navigate("all_sessions"){
                         popUpTo("active_workout/{planId}") { inclusive = true }
                     }
                 }
@@ -122,6 +123,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 navController = navController
             )
         }
+        composable(
+            route = "all_sessions"){
+                AllSessionsScreen()
+            }
     }
 
 }

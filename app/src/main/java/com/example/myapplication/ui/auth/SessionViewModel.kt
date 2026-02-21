@@ -13,10 +13,13 @@ import com.example.myapplication.data.auth.requests.CreateWorkoutSessionRequest
 import com.example.myapplication.data.auth.requests.SessionExerciseRequest
 import com.example.myapplication.data.auth.requests.SetRequest
 import com.example.myapplication.data.auth.responses.PlanExercisesResponse
+import com.example.myapplication.data.auth.responses.SessionsResponse
 import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -44,6 +47,28 @@ class SessionViewModel @Inject constructor(
     val exercises: List<PlanExercisesResponse> get() = _exercises
     var sessionId by mutableStateOf<Long?>(null)
     private var startTimeMillis: Long = 0
+
+    private val _session = MutableStateFlow<List<SessionsResponse>> (emptyList())
+    val session: StateFlow<List<SessionsResponse>> = _session
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    fun fetchSessions(){
+        viewModelScope.launch {
+            _isLoading.value = true
+            try{
+                val response = workoutSessionRepository.listSessions()
+                if(response.isSuccessful)
+                    _session.value = response.body() ?: emptyList()
+            }catch(e: Exception){
+                Log.e("API_DEBUG", "Greska pri slanju sesije: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+
+        }
+    }
 
     fun startSession(planId: Long?){
         if (planId == null) return
