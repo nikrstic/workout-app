@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -74,7 +73,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                             onClick = {
                                 if (currentRoute != screen.route) {
                                     navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
+                                        val startRoute = navController.graph.startDestinationRoute ?: "all_sessions"
+
+                                        popUpTo(startRoute) {
                                             saveState = true
                                         }
                                         launchSingleTop = true

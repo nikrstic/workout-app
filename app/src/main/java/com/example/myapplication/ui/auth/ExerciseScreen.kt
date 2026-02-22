@@ -376,7 +376,8 @@ fun showAddDetailsDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(setsText.toInt(), repsText.toInt()) }) {
+            Button(onClick = { onConfirm(setsText.toInt(), repsText.toInt()) },
+                enabled = setsText.isNotBlank() && repsText.isNotBlank()) {
                 Text("Dodaj")
             }
         },
